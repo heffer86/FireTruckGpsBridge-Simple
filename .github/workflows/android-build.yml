@@ -2,28 +2,50 @@ name: Build Android APKs
 
 on:
   push:
+    branches: [ main ]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build debug APKs
+
+      - name: Build both debug APKs
         run: gradle --no-daemon clean :pixel-transmitter:assembleDebug :fire-receiver:assembleDebug
-      - uses: actions/upload-artifact@v4
+
+      - name: Rename APKs
+        run: |
+          mkdir -p artifacts
+          cp pixel-transmitter/build/outputs/apk/debug/pixel-transmitter-debug.apk artifacts/GPS-Transmitter-debug.apk
+          cp fire-receiver/build/outputs/apk/debug/fire-receiver-debug.apk artifacts/GPS-Receiver-debug.apk
+
+      - name: Upload transmitter APK
+        uses: actions/upload-artifact@v4
         with:
-          name: gps-transmitter-debug
-          path: pixel-transmitter/build/outputs/apk/debug/*.apk
-      - uses: actions/upload-artifact@v4
+          name: GPS-Transmitter-debug
+          path: artifacts/GPS-Transmitter-debug.apk
+          if-no-files-found: error
+
+      - name: Upload receiver APK
+        uses: actions/upload-artifact@v4
         with:
-          name: gps-receiver-debug
-          path: fire-receiver/build/outputs/apk/debug/*.apk
+          name: GPS-Receiver-debug
+          path: artifacts/GPS-Receiver-debug.apk
+          if-no-files-found: error
