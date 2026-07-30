@@ -83,7 +83,7 @@ class GpsTransmitService : Service(), LocationListener {
                 val datagram = DatagramPacket(
                     packetBytes,
                     packetBytes.size,
-                    InetAddress.getByName("255.255.255.255"),
+                    InetAddress.getByName("192.168.173.14"),
                     PORT
                 )
                 socket?.send(datagram)
